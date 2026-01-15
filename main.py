@@ -1,7 +1,8 @@
 import os
 import time
 import argparse
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 from sampler import WarpSampler
 from model import Model
 from tqdm import tqdm
@@ -36,11 +37,11 @@ f.close()
 
 dataset = data_partition(args.dataset)
 [user_train, user_valid, user_test, usernum, itemnum] = dataset
-num_batch = len(user_train) / args.batch_size
+num_batch = len(user_train) // args.batch_size
 cc = 0.0
 for u in user_train:
     cc += len(user_train[u])
-print 'average sequence length: %.2f' % (cc / len(user_train))
+print('average sequence length: %.2f' % (cc / len(user_train)))
 
 f = open(os.path.join(args.dataset + '_' + args.train_dir, 'log.txt'), 'w')
 config = tf.ConfigProto()
@@ -67,12 +68,12 @@ try:
         if epoch % 20 == 0:
             t1 = time.time() - t0
             T += t1
-            print 'Evaluating',
+            print('Evaluating', end=' ')
             t_test = evaluate(model, dataset, args, sess)
             t_valid = evaluate_valid(model, dataset, args, sess)
-            print ''
-            print 'epoch:%d, time: %f(s), valid (NDCG@10: %.4f, HR@10: %.4f), test (NDCG@10: %.4f, HR@10: %.4f)' % (
-            epoch, T, t_valid[0], t_valid[1], t_test[0], t_test[1])
+            print()
+            print('epoch:%d, time: %f(s), valid (NDCG@10: %.4f, HR@10: %.4f), test (NDCG@10: %.4f, HR@10: %.4f)' % (
+            epoch, T, t_valid[0], t_valid[1], t_test[0], t_test[1]))
 
             f.write(str(t_valid) + ' ' + str(t_test) + '\n')
             f.flush()
